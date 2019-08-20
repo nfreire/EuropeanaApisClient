@@ -171,38 +171,44 @@ public class EuropeanaApiClient {
 		
 	}
 	
-	public List<String> listDatasetRecordsIds(String datasetName, int startAt, int resultsToGet) throws AccessException {
-		List<String> datasetsNames=new ArrayList<String>();
-		URL url;
-		String urlStr;
+	public List<String> listDatasetRecordsIds(String datasetName) throws AccessException {
+		List<String> datasetsIds=new ArrayList<String>();
+		String nextCursor="*";
+		String urlStr="";
 		try {
-			urlStr = BASE_URL+"search.json?query=europeana_collectionName:"+URLEncoder.encode(datasetName, "UTF8")+"&start="+startAt+"&rows="+resultsToGet+"&profile=minimal&wskey="+apiKey;
-		} catch (UnsupportedEncodingException e1) {
-			throw new RuntimeException(e1.getMessage(), e1);
-		}
-		try {
-			url = new URL(urlStr);
-			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-			con.setRequestMethod("GET");
-			con.connect();
-			
-			int code = con.getResponseCode();
-			if (code!=200)
-				throw buildAccessException(con);
-			String jsonStr = IOUtils.toString(con.getInputStream(), con.getContentEncoding() == null ? "UTF-8" : con.getContentEncoding());
-			JsonNode  topNode = jsonMapper.readTree(jsonStr);
-			JsonNode itemsNode = topNode.get("items");
-			for(int i=0; i<itemsNode.size(); i++) {
-				JsonNode provNode = itemsNode.get(i);
-				if(provNode.get("id")==null)
-					System.out.println(jsonMapper.writeValueAsString(provNode));
-				else
-					datasetsNames.add(provNode.get("id").asText());
+			URL url;
+			while(nextCursor!=null) {
+				System.out.println(nextCursor);
+				try {
+					urlStr = BASE_URL+"search.json?query=europeana_collectionName:"+URLEncoder.encode(datasetName, "UTF8")+"&cursor="+URLEncoder.encode(nextCursor, "UTF-8")+"&rows=100&profile=minimal&wskey="+apiKey;
+				} catch (UnsupportedEncodingException e1) {
+					throw new RuntimeException(e1.getMessage(), e1);
+				}
+				url = new URL(urlStr);
+				HttpURLConnection con = (HttpURLConnection)url.openConnection();
+				con.setRequestMethod("GET");
+				con.connect();
+				
+				int code = con.getResponseCode();
+				if (code!=200)
+					throw buildAccessException(con);
+				String jsonStr = IOUtils.toString(con.getInputStream(), con.getContentEncoding() == null ? "UTF-8" : con.getContentEncoding());
+				JsonNode  topNode = jsonMapper.readTree(jsonStr);
+				JsonNode jsonNode = topNode.get("nextCursor");
+				nextCursor=jsonNode==null ? null : jsonNode.asText();
+				JsonNode itemsNode = topNode.get("items");
+				for(int i=0; i<itemsNode.size(); i++) {
+					JsonNode provNode = itemsNode.get(i);
+					if(provNode.get("id")==null)
+						System.out.println(jsonMapper.writeValueAsString(provNode));
+					else
+						datasetsIds.add(provNode.get("id").asText());
+				}
 			}
-			return datasetsNames;
+			return datasetsIds;
 		} catch (IOException e) {
 			throw new AccessException(urlStr, e);		
-			}
+		}
 	}
 	
 	public List<Map<String, String>> listDatasetRecordsFieldValues(String datasetName, int startAt, int resultsToGet, String... fields) throws AccessException {
@@ -255,27 +261,34 @@ public class EuropeanaApiClient {
 	}
 	
 	public Model getRecordByUri(String uriOfCho) throws AccessException {
-		try {
-			URL url = new URL(uriOfCho);
-			HttpURLConnection urlCon = (HttpURLConnection) url.openConnection();
-			urlCon.setRequestMethod("GET");
-			urlCon.setRequestProperty("Accept", "application/rdf+xml");
-//			System.out.println(urlCon.getResponseCode());
-//			System.out.println(urlCon.getHeaderFields());
-			if(urlCon.getResponseCode()>=301 && urlCon.getResponseCode()<=308) {
-//				System.out.println("Redirect to "+ urlCon.getHeaderField("Location"));
-				return getRecordByUri(urlCon.getHeaderField("Location"));
+		URL url = null;
+		HttpURLConnection urlCon = null;
+		int attempst=0;
+		while(true) {
+			try {
+				url = new URL(uriOfCho);
+				urlCon = (HttpURLConnection) url.openConnection();
+				urlCon.setRequestMethod("GET");
+				urlCon.setRequestProperty("Accept", "application/rdf+xml");
+	//			System.out.println(urlCon.getResponseCode());
+	//			System.out.println(urlCon.getHeaderFields());
+				if(urlCon.getResponseCode()>=301 && urlCon.getResponseCode()<=308) {
+	//				System.out.println("Redirect to "+ urlCon.getHeaderField("Location"));
+					return getRecordByUri(urlCon.getHeaderField("Location"));
+				}
+				String md = IOUtils.toString((InputStream) urlCon.getContent(), "UTF8");
+				StringReader mdReader = new StringReader(md);
+				Model ldModelRdf = ModelFactory.createDefaultModel();
+				RDFReader reader = ldModelRdf.getReader("RDF/XML");
+				reader.setProperty("allowBadURIs", "true");
+				reader.read(ldModelRdf, mdReader, null);
+				mdReader.close();
+				return ldModelRdf;
+			} catch (IOException e) {
+				attempst++;
+				if(attempst>3)
+					throw  buildAccessException(urlCon);	
 			}
-			String md = IOUtils.toString((InputStream) urlCon.getContent(), "UTF8");
-			StringReader mdReader = new StringReader(md);
-			Model ldModelRdf = ModelFactory.createDefaultModel();
-			RDFReader reader = ldModelRdf.getReader("RDF/XML");
-			reader.setProperty("allowBadURIs", "true");
-			reader.read(ldModelRdf, mdReader, null);
-			mdReader.close();
-			return ldModelRdf;
-		} catch (IOException e) {
-			throw new AccessException(uriOfCho, e);	
 		}
 	}
 
@@ -290,7 +303,7 @@ public class EuropeanaApiClient {
 				if(con.getInputStream()!=null)
 						body=IOUtils.toString(con.getInputStream(), con.getContentEncoding() == null ? "UTF-8" : con.getContentEncoding());
 			} catch (IOException e) { /*ignore*/ }
-			return new AccessException(con.getURL().toString(), String.valueOf(con.getResponseCode()), body);
+			return new AccessException("HTTP-status:"+con.getResponseCode() +" ; "+con.getURL().toString(), String.valueOf(con.getResponseCode()), body);
 		} catch (IOException e) {
 			return new AccessException(con.getURL().toString());
 		}

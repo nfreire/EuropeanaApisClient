@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>europeana-api-client</groupId>
-	<artifactId>rest</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<groupId>europeana-api</groupId>
+	<artifactId>europeana-apis-client</artifactId>
+	<version>0.1</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -65,14 +65,34 @@
 			<version>3.4.0</version>
 		</dependency>
 		<dependency>
-			<groupId>inescid</groupId>
-			<artifactId>opaf-data</artifactId>
+			<groupId>inescid.dal</groupId>
+			<artifactId>data-aggregation-lab-core</artifactId>
 			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>inescid</groupId>
 			<artifactId>opaf-www</artifactId>
 			<version>0.1</version>
+		</dependency>
+		
+		
+		<dependency>
+			<groupId>nfreire</groupId>
+			<artifactId>google-apis-client</artifactId>
+			<version>0.1</version>
+		</dependency>
+		
+		
+		
+		<dependency>
+		    <groupId>javax.json</groupId>
+		    <artifactId>javax.json-api</artifactId>
+		    <version>1.1.4</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.glassfish</groupId>
+		    <artifactId>javax.json</artifactId>
+		    <version>1.1.4</version>
 		</dependency>
 	</dependencies>
 </project>

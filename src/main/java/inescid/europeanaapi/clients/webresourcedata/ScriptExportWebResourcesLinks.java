@@ -21,9 +21,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 
+import inescid.dataaggregation.data.model.Rdf;
+import inescid.dataaggregation.data.model.Edm;
+import inescid.dataaggregation.data.model.Ore;
+import inescid.dataaggregation.data.model.Rdf;
 import inescid.europeanaapi.EuropeanaApiClient;
-import inescid.opaf.data.RdfReg;
-import inescid.opaf.data.profile.MapOfInts;
+import inescid.util.datastruct.MapOfInts;
 import inescid.util.RdfUtil;
 
 public class ScriptExportWebResourcesLinks {
@@ -86,7 +89,7 @@ public class ScriptExportWebResourcesLinks {
 							try {
 								Model edmRdf = europeanaApiClient.getRecord(recId);
 		
-								StmtIterator listStatements = edmRdf.listStatements(null, RdfReg.RDF_TYPE, RdfReg.ORE_AGGREGATION);
+								StmtIterator listStatements = edmRdf.listStatements(null, Rdf.type, Ore.Aggregation);
 								Statement st = listStatements.next();
 								Resource aggRes=st.getSubject();
 								
@@ -96,9 +99,9 @@ public class ScriptExportWebResourcesLinks {
 		//					    });
 								String choUri = europeanaApiClient.recordUriFromApiId(recId);
 								providerIsEmpty=false;
-								Statement shownAt = aggRes.getProperty(RdfReg.EDM_IS_SHOWN_AT);
-								Statement shownBy = aggRes.getProperty(RdfReg.EDM_IS_SHOWN_BY);
-								Statement landingPage = aggRes.getProperty(RdfReg.EDM_LANDING_PAGE);
+								Statement shownAt = aggRes.getProperty(Edm.isShownAt);
+								Statement shownBy = aggRes.getProperty(Edm.isShownBy);
+								Statement landingPage = aggRes.getProperty(Edm.landingPage);
 		
 								csvPrinter.print(provId);
 								csvPrinter.print(dsName);

@@ -22,9 +22,8 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 
 import inescid.europeanaapi.EuropeanaApiClient;
-import inescid.opaf.data.RdfReg;
-import inescid.opaf.data.profile.MapOfInts;
 import inescid.util.RdfUtil;
+import inescid.util.datastruct.MapOfInts;
 
 public class ScriptReportOnExportWebResourcesLinks {
 	

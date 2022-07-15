@@ -178,7 +178,6 @@ public class EuropeanaApiClient {
 		try {
 			URL url;
 			while(nextCursor!=null) {
-				System.out.println(nextCursor);
 				try {
 					urlStr = BASE_URL+"search.json?query=europeana_collectionName:"+URLEncoder.encode(datasetName, "UTF8")+"&cursor="+URLEncoder.encode(nextCursor, "UTF-8")+"&rows=100&profile=minimal&wskey="+apiKey;
 				} catch (UnsupportedEncodingException e1) {
@@ -260,7 +259,26 @@ public class EuropeanaApiClient {
 		return getRecordByUri(urlStr);
 	}
 	
+	public String getRecordRdfXml(String europeanaApiRecordId) throws AccessException {
+		String urlStr = recordUriFromApiId(europeanaApiRecordId);
+		return getRecordRdfXmlByUri(urlStr);
+	}
+	
+	public Model parseEdmRdfXml(String edmRdfXml) throws AccessException {
+		StringReader mdReader = new StringReader(edmRdfXml);
+		Model ldModelRdf = ModelFactory.createDefaultModel();
+		RDFReader reader = ldModelRdf.getReader("RDF/XML");
+		reader.setProperty("allowBadURIs", "true");
+		reader.read(ldModelRdf, mdReader, null);
+		mdReader.close();
+		return ldModelRdf;
+	}
+	
 	public Model getRecordByUri(String uriOfCho) throws AccessException {
+		String md = getRecordRdfXmlByUri(uriOfCho);
+		return parseEdmRdfXml(md);
+	}
+	public String getRecordRdfXmlByUri(String uriOfCho) throws AccessException {
 		URL url = null;
 		HttpURLConnection urlCon = null;
 		int attempst=0;
@@ -270,20 +288,14 @@ public class EuropeanaApiClient {
 				urlCon = (HttpURLConnection) url.openConnection();
 				urlCon.setRequestMethod("GET");
 				urlCon.setRequestProperty("Accept", "application/rdf+xml");
-	//			System.out.println(urlCon.getResponseCode());
-	//			System.out.println(urlCon.getHeaderFields());
+				//			System.out.println(urlCon.getResponseCode());
+				//			System.out.println(urlCon.getHeaderFields());
 				if(urlCon.getResponseCode()>=301 && urlCon.getResponseCode()<=308) {
-	//				System.out.println("Redirect to "+ urlCon.getHeaderField("Location"));
-					return getRecordByUri(urlCon.getHeaderField("Location"));
+					//				System.out.println("Redirect to "+ urlCon.getHeaderField("Location"));
+					return getRecordRdfXmlByUri(urlCon.getHeaderField("Location"));
 				}
 				String md = IOUtils.toString((InputStream) urlCon.getContent(), "UTF8");
-				StringReader mdReader = new StringReader(md);
-				Model ldModelRdf = ModelFactory.createDefaultModel();
-				RDFReader reader = ldModelRdf.getReader("RDF/XML");
-				reader.setProperty("allowBadURIs", "true");
-				reader.read(ldModelRdf, mdReader, null);
-				mdReader.close();
-				return ldModelRdf;
+				return md;
 			} catch (IOException e) {
 				attempst++;
 				if(attempst>3)

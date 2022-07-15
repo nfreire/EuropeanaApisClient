@@ -22,7 +22,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 
 import inescid.europeanaapi.HttpsUtil;
-import inescid.opaf.data.RdfReg;
+
 
 public class ScriptCheckLodContentNegotiationHtmlAtWebResourcesAndDownload {
 	

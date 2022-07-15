@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 
-import inescid.opaf.data.profile.MapOfInts;
+import inescid.util.datastruct.MapOfInts;
 
 public class ScriptCheckForSchemaOrgInHtml {
 	

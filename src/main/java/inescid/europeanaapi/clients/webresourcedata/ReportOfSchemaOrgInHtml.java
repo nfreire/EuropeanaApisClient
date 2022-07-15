@@ -10,7 +10,7 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 
 import inescid.europeanaapi.clients.webresourcedata.ScriptCheckForDataInHtml.Counts;
 import inescid.europeanaapi.clients.webresourcedata.ScriptCheckForDataInHtml.Vocabulary;
-import inescid.opaf.data.profile.MapOfInts;
+import inescid.util.datastruct.MapOfInts;
 
 public class ReportOfSchemaOrgInHtml {
 		public int[] counts = new int[ScriptCheckForDataInHtml.Counts.values().length];

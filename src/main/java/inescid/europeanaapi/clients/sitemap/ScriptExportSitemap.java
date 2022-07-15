@@ -25,9 +25,6 @@ import org.apache.jena.rdf.model.StmtIterator;
 
 import inescid.europeanaapi.AccessException;
 import inescid.europeanaapi.EuropeanaApiClient;
-import inescid.opaf.data.RdfReg;
-import inescid.opaf.data.profile.MapOfInts;
-import inescid.util.RdfUtil;
 
 public class ScriptExportSitemap {
 	static  int SAMPLED_CHOS_PER_DATASET=10;

@@ -3,7 +3,8 @@ package inescid.europeanaapi.clients.webresourcedata;
 import java.util.HashMap;
 import java.util.Map;
 
-import inescid.opaf.data.profile.MapOfInts;
+import inescid.util.datastruct.MapOfInts;
+
 
 public class DataStatsProvider {
 	public class Content {
